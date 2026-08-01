@@ -1,0 +1,248 @@
+@import "tailwindcss";
+
+/* Sınıf tabanlı tema geçişi — <html class="dark"> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   Renk katmanları
+   canvas   → sayfa zemini
+   surface  → kart / panel zemini
+   ink      → ana metin
+   muted    → ikincil metin
+   line     → ayırıcı ve kenarlık
+   accent   → tek vurgu; ölçülü kullanılır
+   ============================================================ */
+
+:root {
+  --canvas: #ffffff;
+  --canvas-alt: #f7f7f8;
+  --surface: #ffffff;
+  --surface-alt: #fbfbfc;
+  --ink: #16181d;
+  --ink-soft: #3d4149;
+  --muted: #6b6f76;
+  --faint: #9a9ea6;
+  --line: #e7e8eb;
+  --line-strong: #d5d7dc;
+  --accent: #1f3a5f;
+  --accent-ink: #ffffff;
+  --accent-wash: #f1f4f8;
+  --shadow-soft: 0 1px 2px rgb(16 18 24 / 0.04), 0 8px 24px -12px rgb(16 18 24 / 0.12);
+  --shadow-lift: 0 1px 2px rgb(16 18 24 / 0.05), 0 16px 40px -20px rgb(16 18 24 / 0.2);
+}
+
+.dark {
+  --canvas: #0b0c0e;
+  --canvas-alt: #111214;
+  --surface: #131417;
+  --surface-alt: #17181c;
+  --ink: #f2f3f5;
+  --ink-soft: #d3d5da;
+  --muted: #979aa2;
+  --faint: #6d707a;
+  --line: #25272c;
+  --line-strong: #33363d;
+  --accent: #c6d8f0;
+  --accent-ink: #0b0c0e;
+  --accent-wash: #171a1f;
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 40px -20px rgb(0 0 0 / 0.8);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-canvas-alt: var(--canvas-alt);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-wash: var(--accent-wash);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+
+  /* Akışkan başlık ölçeği — viewport ile büyür, clamp ile sınırlanır */
+  --text-display: clamp(2.75rem, 1.9rem + 3.6vw, 4.5rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+
+  --text-title: clamp(2rem, 1.5rem + 2.1vw, 3rem);
+  --text-title--line-height: 1.08;
+  --text-title--letter-spacing: -0.03em;
+
+  --text-heading: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
+  --text-heading--line-height: 1.18;
+  --text-heading--letter-spacing: -0.022em;
+
+  --text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --text-lead--line-height: 1.6;
+  --text-lead--letter-spacing: -0.011em;
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* sticky header altında kalan bölüm başlıkları için */
+    scroll-padding-top: 6rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--ink);
+    color: var(--canvas);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Rakamların dikey hizada kalması için */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* Sayfa genişliği — tüm bölümler bunu paylaşır */
+  .shell {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .shell {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  /* Bölüm üstü küçük etiket: ─── HİZMETLER */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 1.75rem;
+    height: 1px;
+    background-color: var(--line-strong);
+  }
+}
+
+@layer utilities {
+  /* Girişte tek seferlik yumuşak yükselme.
+     Gizleme yalnızca <html class="js"> altında geçerli: JS çalışmazsa
+     (veya observer hiç tetiklenmezse) içerik olduğu gibi görünür kalır —
+     animasyon uğruna sayfayı boş bırakmayı göze alamayız. */
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* Kayan referans şeridi.
+     Logo listesi bileşende iki kez basılır; şerit tam yarısı kadar kayınca
+     başa döner ve ek kopya boşluğu doldurduğu için geçiş fark edilmez.
+     Kenarlarda maske ile eriyerek biter — kesik logo görünmez. */
+  .marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 6rem,
+      #000 calc(100% - 6rem),
+      transparent
+    );
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 46s linear infinite;
+  }
+
+  /* İmleç üstündeyken durur — kullanıcı bir logoyu okumak isteyebilir. */
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee {
+      overflow-x: auto;
+      mask-image: none;
+    }
+    .marquee-track {
+      animation: none;
+    }
+  }
+
+  /* İnce nokta dokusu — hero arkasında çok düşük yoğunlukta */
+  .dotted {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      var(--line-strong) 1px,
+      transparent 0
+    );
+    background-size: 28px 28px;
+  }
+}
