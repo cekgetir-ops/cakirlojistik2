@@ -1,34 +1,44 @@
 "use client";
 
-import { useEffect, useRef, type ElementType, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type ElementType,
+  type ReactNode,
+} from "react";
 
 /**
  * Görünür alana girince içeriği bir kez yumuşakça yukarı taşır.
  * Animasyon CSS'te (`.reveal` / `.is-visible`), burada sadece tetikleme var.
+ *
+ * `enter` verildiğinde observer hiç kurulmaz; içerik sayfa yüklenir yüklenmez
+ * CSS animasyonuyla girer. Katlamanın üstündeki bloklar için bu daha doğru:
+ * kesişmeyi beklemek hydrate anında görünür bir sıçramaya yol açıyor.
  */
 export default function Reveal({
   children,
   as: Tag = "div",
   delay = 0,
   className = "",
+  enter = false,
 }: {
   children: ReactNode;
   as?: ElementType;
   /** Sıralı ögelerde kademeli giriş için milisaniye */
   delay?: number;
   className?: string;
+  /** Kesişmeyi bekleme — sayfa yüklenince gir */
+  enter?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    // Giriş modunda tetikleyiciye gerek yok, animasyon CSS'te başlıyor.
+    if (enter) return;
+
     const el = ref.current;
     if (!el) return;
-
-    // Hareket azaltma tercihi varsa animasyonu hiç kurma, doğrudan göster.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.classList.add("is-visible");
-      return;
-    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -46,13 +56,20 @@ export default function Reveal({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [enter]);
+
+  // Giriş modunda gecikme animation-delay'e, observer modunda transition-delay'e gider.
+  const style: CSSProperties | undefined = delay
+    ? enter
+      ? ({ "--enter-delay": `${delay}ms` } as CSSProperties)
+      : { transitionDelay: `${delay}ms` }
+    : undefined;
 
   return (
     <Tag
       ref={ref}
-      className={`reveal ${className}`}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+      className={`reveal${enter ? " reveal-enter" : ""} ${className}`}
+      style={style}
     >
       {children}
     </Tag>

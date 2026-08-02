@@ -10,28 +10,64 @@ import { partners } from "@/lib/site";
  * Kayma animasyonu CSS'te (`.marquee`), burada yalnızca içerik var.
  * İkinci kopya ekran okuyucudan gizleniyor ki liste iki kez okunmasın.
  */
+/**
+ * Şerit tam yarısı kadar kayıp başa döndüğü için bir "set" en az ekran
+ * genişliği kadar olmalı; aksi halde dönüş anında sağda boşluk görünür.
+ * Altı firma yaklaşık 1250px ediyor ve bu geniş ekranlara yetmiyor —
+ * bu yüzden set iki kez basılıyor (~2500px).
+ */
+const setItems = [...partners, ...partners];
+
 function Row({ duplicate = false }: { duplicate?: boolean }) {
   return (
     <ul
       className="flex shrink-0 items-center"
       aria-hidden={duplicate || undefined}
     >
-      {partners.map((partner, i) => (
+      {setItems.map((partner, i) => (
         <li
           key={`${partner.name}-${i}`}
+          // Set içindeki ikinci kopya da ekran okuyucudan gizli: liste
+          // görsel olarak tekrarlanıyor ama sesli olarak bir kez okunuyor.
+          aria-hidden={i >= partners.length || undefined}
           className="flex h-16 w-44 shrink-0 items-center justify-center px-6 sm:w-52"
         >
           {partner.logo ? (
-            <Image
-              src={partner.logo}
-              alt={partner.name}
-              width={160}
-              height={48}
-              className="max-h-10 w-auto object-contain opacity-60 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
-            />
+            <a
+              href={partner.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              // Şerit kayarken tıklama hedefi kaçar; imleç üstündeyken
+              // animasyon zaten duruyor (.marquee:hover), o yüzden sorun değil.
+              className="flex items-center justify-center"
+              tabIndex={duplicate ? -1 : undefined}
+            >
+              {/* Şerit logoları tek renkli gösteriyor; `logo-tone-*` sınıfı
+                  yalnızca hangi temada ters çevrileceğini belirliyor.
+                  İmleç üstündeyken logo kendi renklerine dönüyor. */}
+              {/* Sabit kutu + object-contain: logolar farklı en/boy
+                  oranlarında geliyor, hepsi aynı optik ağırlıkta dursun.
+                  Ölçü sabit olduğu için görsel yüklenmeden önce de yer
+                  kaplıyor — `w-auto` ile kutu 0 genişlikte kalıyor ve
+                  lazy loading hiç tetiklenmiyordu. */}
+              <Image
+                src={partner.logo}
+                alt={partner.name}
+                width={160}
+                height={48}
+                unoptimized
+                // Şerit sürekli kaydığı için lazy yükleme uygun değil:
+                // ikinci kopya görünür alanın dışında duruyor ve kesişme
+                // hiç oluşmayabiliyor — o zaman şeridin yarısı boş kayıyor.
+                loading="eager"
+                className={`logo-mark h-10 w-32 object-contain ${
+                  partner.tone === "light" ? "logo-tone-light" : "logo-tone-dark"
+                }`}
+              />
+            </a>
           ) : (
             // Logo gelene kadar: nötr çerçeve içinde firma adı
-            <span className="flex h-10 w-full items-center justify-center rounded-md border border-dashed border-line-strong text-[12px] text-faint">
+            <span className="flex h-10 w-full items-center justify-center rounded-md border border-dashed border-line-strong px-2 text-center text-[12px] leading-tight text-faint">
               {partner.name}
             </span>
           )}

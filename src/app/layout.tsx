@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { ViewTransition } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SmoothScroll from "@/components/SmoothScroll";
 import { site } from "@/lib/site";
 
 const inter = Inter({
@@ -79,8 +81,13 @@ export default function RootLayout({
         >
           İçeriğe geç
         </a>
+        <SmoothScroll />
         <Header />
-        <main id="main">{children}</main>
+        {/* Rota değişiminde içerik yumuşakça çapraz geçer; başlık ve alt bilgi
+            sabit kalır ki gezinme sırasında çerçeve yerinde dursun. */}
+        <ViewTransition name="sayfa">
+          <main id="main">{children}</main>
+        </ViewTransition>
         <Footer />
       </body>
     </html>

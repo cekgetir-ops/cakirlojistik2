@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    // React'in <ViewTransition> bileşenini etkinleştirir; rota geçişlerinde
+    // tarayıcının View Transitions API'si devreye girer.
+    viewTransition: true,
+  },
 };
 
 export default nextConfig;

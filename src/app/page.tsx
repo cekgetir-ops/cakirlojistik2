@@ -63,7 +63,7 @@ export default function Home() {
         <div className="mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
           {services.map((service, i) => (
             <Reveal key={service.id} delay={i * 70}>
-              <article className="group border-t border-line pt-6">
+              <article className="group rule-lift relative border-t border-line pt-6">
                 <service.icon className="size-6 text-ink" strokeWidth={1.4} />
                 <h3 className="mt-5 text-base font-semibold tracking-tight text-ink">
                   {service.title}
@@ -99,30 +99,40 @@ export default function Home() {
           />
 
           <Reveal delay={120}>
-            <div className="mt-16 rounded-2xl border border-line bg-surface p-8 lg:p-12">
+            {/* `route-card`: imleç kartın üzerine geldiğinde hat canlanır —
+                koşucu nokta iki şehir arasında gidip gelir, çizgi üzerinde
+                ince bir parlama akar. Detay yalnızca odaklanınca çalışır. */}
+            <div className="route-card mt-16 rounded-2xl border border-line bg-surface p-8 lg:p-12">
               {/* Hat çizgisi: iki uç durak ve arasındaki mesafe */}
               <div className="flex items-center gap-4 lg:gap-8">
-                <div className="shrink-0">
-                  <span className="tabular text-[11px] font-medium uppercase tracking-[0.16em] text-faint">
+                <div className="route-city route-city--ist shrink-0">
+                  <span className="route-code tabular text-[11px] font-medium uppercase tracking-[0.16em] text-faint">
                     IST
                   </span>
-                  <p className="mt-1.5 text-heading font-semibold tracking-tight">
+                  <p className="route-name mt-1.5 text-heading font-semibold tracking-tight">
                     İstanbul
                   </p>
                 </div>
 
-                <div className="relative flex-1" aria-hidden="true">
-                  <div className="h-px w-full bg-line-strong" />
-                  <span className="absolute left-0 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-line-strong bg-surface" />
-                  <span className="absolute right-0 top-1/2 size-2.5 translate-x-1/2 -translate-y-1/2 rounded-full border border-line-strong bg-surface" />
-                  <span className="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink" />
+                <div className="route-rail relative flex-1" aria-hidden="true">
+                  <div className="route-line relative h-px w-full overflow-hidden bg-line-strong">
+                    <span className="route-sheen absolute inset-y-0 left-0 w-1/3" />
+                  </div>
+                  <span className="route-stop absolute left-0 top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-line-strong bg-surface" />
+                  <span className="route-stop absolute right-0 top-1/2 size-2.5 translate-x-1/2 -translate-y-1/2 rounded-full border border-line-strong bg-surface" />
+                  {/* Sarmalayıcı hattın tam genişliği kadar; yüzdelik taşıma
+                      kendi genişliğine göre hesaplandığı için nokta uçtan uca
+                      yalnızca transform ile gidiyor — düzen hesabı yok. */}
+                  <span className="route-runner absolute inset-x-0 top-1/2 block -translate-y-1/2">
+                    <span className="route-dot absolute left-0 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink" />
+                  </span>
                 </div>
 
-                <div className="shrink-0 text-right">
-                  <span className="tabular text-[11px] font-medium uppercase tracking-[0.16em] text-faint">
+                <div className="route-city route-city--ank shrink-0 text-right">
+                  <span className="route-code tabular text-[11px] font-medium uppercase tracking-[0.16em] text-faint">
                     ANK
                   </span>
-                  <p className="mt-1.5 text-heading font-semibold tracking-tight">
+                  <p className="route-name mt-1.5 text-heading font-semibold tracking-tight">
                     Ankara
                   </p>
                 </div>
@@ -187,6 +197,7 @@ export default function Home() {
               hint="Dikey portre: ekipten biri aracı taşıyıcıya yüklerken ya da bağlarken. İnsan yüzü olan kareler daha çok güven verir. Önerilen: 1200×1500 px"
               sizes="(min-width: 1024px) 50vw, 100vw"
               rounded="rounded-2xl"
+              className="zoom-media"
             />
           </Reveal>
         </div>
@@ -203,7 +214,7 @@ export default function Home() {
         <ol className="mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
           {process.map((item, i) => (
             <Reveal key={item.step} as="li" delay={i * 70}>
-              <div className="border-t border-line pt-6">
+              <div className="rule-mark relative border-t border-line pt-6">
                 <span className="tabular text-sm font-medium text-faint">
                   {item.step}
                 </span>
