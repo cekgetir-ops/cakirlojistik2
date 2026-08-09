@@ -21,11 +21,28 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Panel açıkken arka planın kaymasını engelle.
+  /**
+   * Panel açıkken arka plan kaymasın.
+   *
+   * Burada bilerek `overflow: hidden` KULLANILMIYOR. Body'ye verilen
+   * overflow, html `visible` olduğunda viewport'a yayılıyor; sayfa
+   * kaydırılamaz hâle gelince `position: sticky` dayanacağı kaydırma
+   * kapsayıcısını kaybediyor ve başlık akıştaki statik yerine —
+   * yani belgenin tepesine — düşüyor. Aşağı kaydırılmış bir sayfada
+   * bu, başlığın ve içindeki menünün ekrandan tamamen kaybolması
+   * demek oluyordu.
+   *
+   * Onun yerine <html> üzerine bir işaret bırakılıyor; SmoothScroll
+   * bunu görüp Lenis'i durduruyor. Lenis tekerlek ve dokunma
+   * girdisini zaten yutuyor, düzen hiç bozulmuyor.
+   */
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    const kok = document.documentElement;
+    if (open) kok.dataset.menuAcik = "1";
+    else delete kok.dataset.menuAcik;
+
     return () => {
-      document.body.style.overflow = "";
+      delete document.documentElement.dataset.menuAcik;
     };
   }, [open]);
 
@@ -37,17 +54,18 @@ export default function Header() {
   }, [open]);
 
   return (
-    <header
-      className={`sticky top-0 z-50 transition-colors duration-300 ${scrolled || open
-          ? "border-b border-line bg-canvas/85 backdrop-blur-xl backdrop-saturate-150"
-          : "border-b border-transparent bg-transparent"
-        }`}
-    >
-      <div className="shell flex h-18 items-center justify-between gap-6">
-        <Logo />
+    // Dış kabuk her zaman saydam ve SABİT yükseklikte. Yükseklik değişseydi
+    // sticky başlık akışta yer kapladığı için sayfa içeriği kaydırma
+    // sırasında zıplardı. Görsel değişimin tamamı içteki adada.
+    <header className="sticky top-0 z-50">
+      <div className="shell flex h-18 items-center">
+        {/* Marka adı uzadı ve menü altı ögeye çıktı; masaüstü menüsü artık
+            lg yerine xl'de açılıyor, altında mobil panel kullanılıyor. */}
+        <div className={`nav-ada ${scrolled || open ? "is-stuck" : ""}`}>
+          <Logo />
 
-        <nav aria-label="Ana menü" className="hidden lg:block">
-          <ul className="flex items-center gap-1">
+        <nav aria-label="Ana menü" className="hidden xl:block">
+          <ul className="flex items-center gap-0.5">
             {nav.map((item) => {
               const active =
                 item.href === "/"
@@ -58,7 +76,7 @@ export default function Header() {
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative rounded-full px-3.5 py-2 text-[13.5px] font-medium transition-colors ${active
+                    className={`relative whitespace-nowrap rounded-full px-3 py-2 text-[13.5px] font-medium transition-colors ${active
                         ? "text-ink"
                         : "text-muted hover:text-ink"
                       }`}
@@ -74,10 +92,12 @@ export default function Header() {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
+          {/* Telefon en son eklenen bilgi; ancak menüden sonra yer kalırsa
+              görünüyor (2xl). Altında mobil panelde ve alt bilgide var. */}
           <a
             href={contact.phone.href}
-            className="hidden items-center gap-2 rounded-full px-3 py-2 text-[13.5px] font-medium text-muted transition-colors hover:text-ink xl:inline-flex"
+            className="ada-telefon hidden items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-[13.5px] font-medium text-muted transition-colors hover:text-ink 2xl:inline-flex"
           >
             <Phone className="size-4" />
             <span className="tabular">{contact.phone.label}</span>
@@ -87,7 +107,7 @@ export default function Header() {
 
           <Link
             href="/iletisim"
-            className="hidden rounded-full bg-ink px-5 py-2.5 text-[13.5px] font-medium text-canvas transition-opacity hover:opacity-85 sm:inline-flex"
+            className="hidden whitespace-nowrap rounded-full bg-ink px-5 py-2.5 text-[13.5px] font-medium text-canvas transition-opacity hover:opacity-85 sm:inline-flex"
           >
             Teklif alın
           </Link>
@@ -98,24 +118,29 @@ export default function Header() {
             aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
             aria-expanded={open}
             aria-controls="mobil-menu"
-            className="inline-flex size-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-canvas-alt lg:hidden"
+            className="inline-flex size-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-canvas-alt xl:hidden"
           >
             {open ? <Close className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
-      </div>
 
-      {/* Mobil panel */}
-      <div
-        id="mobil-menu"
-        hidden={!open}
-        className="border-t border-line bg-canvas lg:hidden"
-      >
-        {/* Panel içindeki her bağlantı menüyü kapatır — tıklamayı burada
-            tek noktada yakalıyoruz ki her linke ayrı işleyici eklemeyelim. */}
-        <nav
-          aria-label="Mobil menü"
-          className="shell py-4"
+        {/* Mobil panel — adanın içinde duruyor ki genişliği onunla hizalansın
+            ve ada daraldığında altında asılı kalmasın. Akıştan çıkarıldığı
+            için açılıp kapanması belge yüksekliğini değiştirmiyor.
+            `data-lenis-prevent` Lenis'in bu alandaki kaydırmayı yutmasını,
+            `overscroll-contain` da kaydırmanın arkadaki sayfaya
+            zincirlenmesini engelliyor. */}
+        <div
+          id="mobil-menu"
+          hidden={!open}
+          data-lenis-prevent
+          className="absolute inset-x-0 top-full mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-canvas/95 px-5 shadow-lift backdrop-blur-xl xl:hidden"
+        >
+          {/* Panel içindeki her bağlantı menüyü kapatır — tıklamayı burada
+              tek noktada yakalıyoruz ki her linke ayrı işleyici eklemeyelim. */}
+          <nav
+            aria-label="Mobil menü"
+            className="py-4"
           onClick={(e) => {
             if ((e.target as HTMLElement).closest("a")) setOpen(false);
           }}
@@ -156,8 +181,10 @@ export default function Header() {
               <span className="tabular">{contact.phone.label}</span>
             </a>
           </div>
-        </nav>
+          </nav>
+        </div>
       </div>
+    </div>
     </header>
   );
 }

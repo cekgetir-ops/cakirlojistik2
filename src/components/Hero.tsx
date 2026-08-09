@@ -20,7 +20,7 @@ export default function Hero() {
     <section className="relative overflow-hidden pt-14 lg:pt-24">
       <div className="shell">
         <Reveal enter className="max-w-4xl">
-          <p className="eyebrow">1997&apos;den beri · İstanbul – Ankara hattı</p>
+          <p className="eyebrow">1997&apos;den beri İstanbul Ankara hattındayız</p>
 
           <h1 className="mt-7 text-display font-semibold text-balance">
             Araçlarınız
@@ -46,7 +46,7 @@ export default function Hero() {
       <Reveal enter delay={140} className="shell mt-16 lg:mt-20">
         <Figure
           ratio="21 / 9"
-          alt="Çakır Lojistik araç taşıma operasyonu"
+          alt="Yüklü araç taşıyıcı yola çıkarken"
           hint="Öne çıkan fotoğraf: yüklü araç taşıyıcı ya da otopark sahası. Geniş kadraj, yatay. Önerilen: 2400×1030 px"
           priority
           sizes="(min-width: 1280px) 1200px, 100vw"

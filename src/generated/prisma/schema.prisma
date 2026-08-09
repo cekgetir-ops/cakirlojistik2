@@ -1,0 +1,87 @@
+// Veri modeli.
+//
+// VERCEL NOTU: SQLite yalnızca yerel geliştirme içindir. Vercel sunucusuz
+// çalıştığı için dosya sistemi salt okunur ve geçicidir; orada SQLite veri
+// kaybeder. Yayına alırken:
+//   1. Aşağıdaki provider'ı "postgresql" yapın
+//   2. DATABASE_URL'e Postgres bağlantı dizesini verin (Neon, Supabase,
+//      Vercel Postgres — hepsi olur)
+//   3. `npx prisma migrate deploy` çalıştırın
+// Şema bunun dışında olduğu gibi çalışır.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+// Prisma 7'de bağlantı adresi artık şemada durmuyor; Migrate için
+// `prisma.config.ts`, çalışma zamanı için `src/lib/db.ts` içindeki
+// driver adapter kullanılıyor.
+datasource db {
+  provider = "sqlite"
+}
+
+/// Yayın durumu — hem yazılar hem hizmet bölgeleri için ortak.
+enum Status {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+/// İçerik türü. Blog yazıları ve hizmet bölgeleri aynı alanları
+/// paylaştığı için tek modelde tutuluyor; ayrı tablo bakım yükü olurdu.
+enum ContentType {
+  BLOG
+  REGION
+}
+
+model Content {
+  id        String      @id @default(cuid())
+  type      ContentType
+  /// URL'de görünen ad. Tür içinde benzersiz olmalı.
+  slug      String
+  title     String
+  /// Liste ve meta açıklamasında kullanılan kısa özet
+  excerpt   String?
+  /// Gövde metni (düz metin / basit markdown)
+  body      String      @default("")
+  /// Kapak görseli adresi. Vercel'de dosya yazılamadığı için
+  /// yükleme yerine adres alanı kullanılıyor.
+  imageUrl  String?
+  imageAlt  String?
+  status    Status      @default(DRAFT)
+  /// Listelerde sıralama; küçük olan önce gelir
+  order     Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([type, slug])
+  @@index([type, status])
+}
+
+/// Site geneli anahtar/değer ayarları.
+///
+/// Tek satırlık bir "site" tablosu yerine anahtar/değer tercih edildi:
+/// yeni bir ayar eklemek migration gerektirmiyor, sadece yeni bir anahtar
+/// yazılıyor. Şu an bakım modu burada tutuluyor.
+model Ayar {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// Referans firmalar — ana sayfadaki kayan şerit buradan besleniyor.
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  href      String   @default("")
+  /// `public/referanslar/...` yolu ya da tam adres
+  logo      String?
+  /// "dark" = koyu renkli logo, "light" = açık/beyaz logo.
+  /// Şerit tek renk gösterdiği için yalnızca ters çevirme kararını belirler.
+  tone      String   @default("dark")
+  visible   Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

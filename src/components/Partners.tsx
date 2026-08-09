@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Reveal from "./Reveal";
-import { partners } from "@/lib/site";
+import { gorunurReferanslar } from "@/lib/content";
+
+type Referans = Awaited<ReturnType<typeof gorunurReferanslar>>[number];
 
 /**
  * Kurumsal referanslar — kesintisiz kayan logo şeridi.
@@ -10,15 +12,20 @@ import { partners } from "@/lib/site";
  * Kayma animasyonu CSS'te (`.marquee`), burada yalnızca içerik var.
  * İkinci kopya ekran okuyucudan gizleniyor ki liste iki kez okunmasın.
  */
-/**
- * Şerit tam yarısı kadar kayıp başa döndüğü için bir "set" en az ekran
- * genişliği kadar olmalı; aksi halde dönüş anında sağda boşluk görünür.
- * Altı firma yaklaşık 1250px ediyor ve bu geniş ekranlara yetmiyor —
- * bu yüzden set iki kez basılıyor (~2500px).
- */
-const setItems = [...partners, ...partners];
+function Row({
+  partners,
+  duplicate = false,
+}: {
+  partners: Referans[];
+  duplicate?: boolean;
+}) {
+  /**
+   * Şerit tam yarısı kadar kayıp başa döndüğü için bir "set" en az ekran
+   * genişliği kadar olmalı; aksi halde dönüş anında sağda boşluk görünür.
+   * Az sayıda firmada tek geçiş yetmediği için set iki kez basılıyor.
+   */
+  const setItems = [...partners, ...partners];
 
-function Row({ duplicate = false }: { duplicate?: boolean }) {
   return (
     <ul
       className="flex shrink-0 items-center"
@@ -26,7 +33,7 @@ function Row({ duplicate = false }: { duplicate?: boolean }) {
     >
       {setItems.map((partner, i) => (
         <li
-          key={`${partner.name}-${i}`}
+          key={`${partner.id}-${i}`}
           // Set içindeki ikinci kopya da ekran okuyucudan gizli: liste
           // görsel olarak tekrarlanıyor ama sesli olarak bir kez okunuyor.
           aria-hidden={i >= partners.length || undefined}
@@ -39,7 +46,7 @@ function Row({ duplicate = false }: { duplicate?: boolean }) {
               rel="noopener noreferrer"
               // Şerit kayarken tıklama hedefi kaçar; imleç üstündeyken
               // animasyon zaten duruyor (.marquee:hover), o yüzden sorun değil.
-              className="flex items-center justify-center"
+              className="logo-link flex items-center justify-center"
               tabIndex={duplicate ? -1 : undefined}
             >
               {/* Şerit logoları tek renkli gösteriyor; `logo-tone-*` sınıfı
@@ -77,7 +84,9 @@ function Row({ duplicate = false }: { duplicate?: boolean }) {
   );
 }
 
-export default function Partners() {
+export default async function Partners() {
+  // Liste artık panelden yönetiliyor; kayıt yoksa bölüm hiç çizilmiyor.
+  const partners = await gorunurReferanslar();
   if (partners.length === 0) return null;
 
   return (
@@ -100,8 +109,8 @@ export default function Partners() {
 
         <div className="marquee mt-10">
           <div className="marquee-track">
-            <Row />
-            <Row duplicate />
+            <Row partners={partners} />
+            <Row partners={partners} duplicate />
           </div>
         </div>
       </Reveal>

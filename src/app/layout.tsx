@@ -1,10 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { ViewTransition } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import SmoothScroll from "@/components/SmoothScroll";
 import { site } from "@/lib/site";
 
 const inter = Inter({
@@ -14,29 +10,40 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  // Göreli canonical/OG adreslerinin mutlak hâle gelmesi için taban adres.
+  metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — İstanbul Ankara Çoklu Araç Taşıma`,
-    template: `%s — ${site.name}`,
+    default: `${site.name} | Kaskolu Araç Nakliyesi`,
+    template: `%s | ${site.name}`,
   },
   description: site.description,
   keywords: [
+    "şehirler arası araç taşıma",
     "çoklu araç taşıma",
-    "araç taşıma",
+    "araç nakliyesi",
+    "oto taşıma",
     "yol yardım",
     "otopark",
     "istanbul ankara araç taşıma",
-    "çakır lojistik",
-    "araç sevkiyat",
     "kaskolu araç taşıma",
+    "araç sevkiyat",
   ],
-  authors: [{ name: site.name }],
+  authors: [{ name: site.legalName }],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: `${site.name} — İstanbul Ankara Çoklu Araç Taşıma`,
+    title: `${site.name} | Kaskolu Araç Nakliyesi`,
     description: site.description,
+    url: site.url,
     type: "website",
     locale: "tr_TR",
     siteName: site.name,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.name} | Kaskolu Araç Nakliyesi`,
+    description: site.description,
+  },
+  robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
@@ -74,21 +81,10 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
+      {/* Ziyaretçi kabuğu (başlık, alt bilgi, yumuşak kaydırma) `(site)`
+          düzeninde; yönetim paneli o kabuğu almasın diye kök burada boş. */}
       <body className="min-h-screen bg-canvas text-ink antialiased">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-canvas"
-        >
-          İçeriğe geç
-        </a>
-        <SmoothScroll />
-        <Header />
-        {/* Rota değişiminde içerik yumuşakça çapraz geçer; başlık ve alt bilgi
-            sabit kalır ki gezinme sırasında çerçeve yerinde dursun. */}
-        <ViewTransition name="sayfa">
-          <main id="main">{children}</main>
-        </ViewTransition>
-        <Footer />
+        {children}
       </body>
     </html>
   );

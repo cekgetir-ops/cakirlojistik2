@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
+import { lenisKaydet } from "@/lib/lenis-kayit";
 
 /**
  * Sayfa genelinde yumuşak kaydırma.
@@ -27,6 +28,9 @@ export default function SmoothScroll() {
       wheelMultiplier: 1.15,
       touchMultiplier: 1.8,
     });
+
+    // Scroll'a bağlı animasyonlar (ScrollTrigger) konumu buradan alsın
+    lenisKaydet(lenis);
 
     let frame = 0;
     const loop = (time: number) => {
@@ -70,16 +74,19 @@ export default function SmoothScroll() {
     document.addEventListener("click", onClick);
 
     /* Mobil menü açıkken sayfayı dondur --------------------------------- */
-    // Header, panel açıkken body'ye overflow:hidden yazıyor. Lenis sanal
-    // kaydırmayı sürdürdüğü için bunu ayrıca duyurmamız gerekiyor.
+    // Header panel açıkken <html> üzerine `data-menu-acik` bırakıyor.
+    // Kilit burada kuruluyor: Lenis durdurulunca tekerlek ve dokunma
+    // girdisi yutuluyor, sayfa yerinde kalıyor. `overflow` bilerek
+    // değiştirilmiyor — değiştirilirse sticky başlık çöküyor.
+    const kok = document.documentElement;
     const syncLock = () => {
-      if (document.body.style.overflow === "hidden") lenis.stop();
+      if (kok.dataset.menuAcik === "1") lenis.stop();
       else lenis.start();
     };
     const lockObserver = new MutationObserver(syncLock);
-    lockObserver.observe(document.body, {
+    lockObserver.observe(kok, {
       attributes: true,
-      attributeFilter: ["style"],
+      attributeFilter: ["data-menu-acik"],
     });
     syncLock();
 
@@ -87,6 +94,7 @@ export default function SmoothScroll() {
       document.removeEventListener("click", onClick);
       lockObserver.disconnect();
       cancelAnimationFrame(frame);
+      lenisKaydet(null);
       lenis.destroy();
     };
   }, []);

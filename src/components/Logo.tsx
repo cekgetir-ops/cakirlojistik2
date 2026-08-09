@@ -34,15 +34,18 @@ export default function Logo({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/"
-      aria-label={`${site.name} — ana sayfa`}
-      className={`group inline-flex items-center gap-2.5 ${className}`}
+      aria-label={`${site.name}, ana sayfa`}
+      className={`group inline-flex shrink-0 items-center gap-2.5 ${className}`}
     >
       <Mark className="size-7 shrink-0 text-ink" />
-      <span className="flex flex-col leading-none">
+      {/* Marka adı uzun; sarmasın diye tek satıra sabitleniyor. Alt etiket
+          dar ekranda gizleniyor — kilit bilgi isim, etiket ikincil. */}
+      <span className="flex flex-col leading-none whitespace-nowrap">
         <span className="text-[15px] font-semibold tracking-tight text-ink">
           {site.name}
         </span>
-        <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.16em] text-faint">
+        {/* `marka-etiket`: ada kapsüle dönüşünce yer açmak için kapanıyor */}
+        <span className="marka-etiket mt-1 hidden text-[10px] font-medium uppercase tracking-[0.16em] text-faint sm:block">
           {site.tagline}
         </span>
       </span>

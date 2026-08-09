@@ -10,9 +10,9 @@ export const services = [
     icon: Carrier,
     title: "Çoklu Araç Taşıma",
     summary:
-      "İstanbul–Ankara hattında karşılıklı seferlerle çoklu araç taşıma. Araçlarınız kaskolu olarak yüklenir, planlanan günde teslim edilir.",
+      "İstanbul Ankara hattında karşılıklı seferlerle çoklu araç taşıma. Araçlarınız kaskolu olarak yüklenir, planlanan günde teslim edilir.",
     features: [
-      "İstanbul ↔ Ankara karşılıklı sefer",
+      "İstanbul ve Ankara arası karşılıklı sefer",
       "Kasko kapsamında taşıma",
       "Tek seferde birden fazla araç",
       "Yazılı teslim tutanağı",

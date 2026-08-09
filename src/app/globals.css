@@ -116,9 +116,11 @@
     scroll-behavior: auto;
   }
 
-  .lenis.lenis-stopped {
-    overflow: hidden;
-  }
+  /* Lenis'in önerdiği `.lenis-stopped { overflow: hidden }` kuralı bilerek
+     yok. Kök ögede overflow'u kapatmak `position: sticky` başlığın
+     dayandığı kaydırma kapsayıcısını ortadan kaldırıyor ve başlık aşağı
+     kaydırılmış sayfalarda ekrandan çıkıyordu. Kilit artık yalnızca
+     `lenis.stop()` ile kuruluyor; girdi zaten orada yutuluyor. */
 
   .lenis.lenis-smooth [data-lenis-prevent] {
     overscroll-behavior: contain;
@@ -165,6 +167,680 @@
     .shell {
       padding-inline: 2.5rem;
     }
+  }
+
+  /* ============================================================
+     Yönetim paneli
+
+     Ön yüzle aynı token'ları kullanıyor ama daha yoğun: panel bir
+     çalışma yüzeyi, pazarlama sayfası değil. Bileşenler burada
+     toplanıyor ki sayfalarda sınıf yığını olmasın.
+     ============================================================ */
+  .admin-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  .admin-input {
+    width: 100%;
+    border-radius: 0.625rem;
+    border: 1px solid var(--line);
+    background-color: var(--canvas);
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--ink);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .admin-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .admin-btn {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    background-color: var(--ink);
+    padding: 0 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--canvas);
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .admin-btn:hover { opacity: 0.88; }
+  .admin-btn:active { transform: scale(0.98); }
+  .admin-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .admin-btn-ghost {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .admin-btn-ghost:hover { background-color: var(--canvas-alt); }
+
+  .admin-nav-link {
+    display: inline-flex;
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+  .admin-nav-link:hover { color: var(--ink); background-color: var(--canvas-alt); }
+
+  .admin-card {
+    display: block;
+    border-radius: 0.875rem;
+    border: 1px solid var(--line);
+    background-color: var(--canvas);
+    padding: 1.25rem;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .admin-card:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
+  }
+
+  .admin-mini-btn {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 0.375rem;
+    border: 1px solid var(--line);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+  .admin-mini-btn:hover { background-color: var(--canvas-alt); }
+  .admin-mini-btn--tehlike:hover {
+    border-color: #dc2626;
+    color: #dc2626;
+  }
+
+  .admin-mini-select {
+    border-radius: 0.375rem;
+    border: 1px solid var(--line);
+    background-color: var(--canvas);
+    padding: 0.25rem 0.375rem;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .admin-rozet {
+    display: inline-flex;
+    shrink: 0;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .admin-rozet--published {
+    background-color: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+  }
+  .admin-rozet--draft {
+    background-color: var(--canvas-alt);
+    color: var(--muted);
+  }
+  .admin-rozet--archived {
+    background-color: var(--canvas-alt);
+    color: var(--faint);
+  }
+
+  /* ============================================================
+     Gezinme adası
+
+     Sayfa başındayken başlık şeffaf ve tam genişlikte durur — hero'nun
+     üstünde ayrı bir çubuk gibi görünmez. Kaydırma başlayınca içeriğin
+     üstünde yüzen bir kapsüle çekilir: daralır, kenarları yuvarlanır,
+     zemin bulanıklaşır.
+
+     Dış kabuğun yüksekliği (h-18) hiç değişmiyor; yalnızca ada kendi
+     içinde küçülüyor. Sticky başlık akışta yer kapladığı için dış
+     yükseklik değişseydi sayfa içeriği her kaydırmada zıplardı.
+
+     max-width iki uçta da uzunluk birimi (78rem → 62rem); yüzde ile
+     uzunluk arası geçiş bazı tarayıcılarda kesikli ilerliyor.
+     ============================================================ */
+  .nav-ada {
+    position: relative;
+    display: flex;
+    width: 100%;
+    max-width: 78rem;
+    height: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-inline: auto;
+    padding-inline: 0;
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+    transition:
+      max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      padding 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      border-radius 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.35s ease,
+      box-shadow 0.35s ease,
+      backdrop-filter 0.35s ease;
+  }
+
+  .nav-ada.is-stuck {
+    max-width: 64rem;
+    height: 3.5rem;
+    padding-inline: 0.875rem 0.5rem;
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--canvas) 78%, transparent);
+    /* Yalnızca standart özellik yazılıyor; `-webkit-` öneki elle eklenirse
+       Lightning CSS ikisini birleştirip standart olanı düşürüyor ve
+       bulanıklık hiç uygulanmıyor. Öneki derleyici kendisi üretiyor. */
+    backdrop-filter: blur(18px) saturate(160%);
+    /* Gölge + iç çizgi: ada zeminden ayrılsın ama çerçeve gibi durmasın */
+    box-shadow:
+      var(--shadow-lift),
+      inset 0 0 0 1px var(--line);
+  }
+
+  /* Ada daralırken marka alt etiketi sıkışıyor; kapsülde gizleniyor. */
+  .nav-ada.is-stuck .marka-etiket {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+  }
+
+  /* Telefon, ada kapsüle çekilince katlanıyor.
+     Dinamik ada daralırken ikincil bilgiyi bırakır; burada da öyle.
+     Katlanmasaydı geniş ekranlarda (telefonun göründüğü 2xl'de) içerik
+     adanın kapasitesini ~170px aşıyor ve tema düğmesiyle "Teklif alın"
+     kapsülün dışına taşıyordu. Numara alt bilgide ve mobil menüde duruyor. */
+  .ada-telefon {
+    max-width: 16rem;
+    overflow: hidden;
+    opacity: 1;
+    transition:
+      max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.3s ease,
+      padding 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      margin 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .nav-ada.is-stuck .ada-telefon {
+    max-width: 0;
+    padding-inline: 0;
+    margin-inline: -0.1875rem; /* aksiyon kutusunun gap'ini de kapat */
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .marka-etiket {
+    overflow: hidden;
+    max-height: 1rem;
+    opacity: 1;
+    transition:
+      opacity 0.3s ease,
+      max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      margin-top 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+    /* ============================================================
+     Açılış ekranı
+
+     Site yayına hazırlanırken gösterilen sayfa. "Kapalıyız" demek yerine
+     açılışın yaklaştığını hissettirmesi için sürekli hareket hâlinde.
+     Beş katman: süzülen ışık alanları, satır satır yükselen giriş,
+     güzergâh rayı, sırayla işaretlenen hazırlık listesi ve alt şerit.
+
+     Hepsi transform/opacity üzerinden dönüyor; renk ve tipografi sitenin
+     geri kalanıyla aynı token'lardan besleniyor.
+     ============================================================ */
+
+  /* --- Giriş: sayfa açılınca satırlar sırayla yükselir --------------- */
+  .acilis-gir {
+    animation: acilis-gir 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  @keyframes acilis-gir {
+    from {
+      opacity: 0;
+      transform: translateY(22px);
+    }
+  }
+
+  /* --- Arka planda süzülen ışık alanları ---------------------------- */
+  .acilis-isik {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(70px);
+    pointer-events: none;
+  }
+
+  .acilis-isik--1 {
+    width: 32rem;
+    height: 32rem;
+    top: -9rem;
+    left: -7rem;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--accent) 20%, transparent),
+      transparent 70%
+    );
+    animation: acilis-suzul-a 24s ease-in-out infinite;
+  }
+
+  .acilis-isik--2 {
+    width: 26rem;
+    height: 26rem;
+    right: -6rem;
+    top: 20%;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--accent) 14%, transparent),
+      transparent 70%
+    );
+    animation: acilis-suzul-b 30s ease-in-out infinite;
+  }
+
+  .acilis-isik--3 {
+    width: 24rem;
+    height: 24rem;
+    bottom: -8rem;
+    left: 35%;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 70%
+    );
+    animation: acilis-suzul-a 27s ease-in-out infinite reverse;
+  }
+
+  @keyframes acilis-suzul-a {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(4rem, 2.5rem, 0) scale(1.12);
+    }
+  }
+
+  @keyframes acilis-suzul-b {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1.08);
+    }
+    50% {
+      transform: translate3d(-3.5rem, -3rem, 0) scale(1);
+    }
+  }
+
+  /* --- Durum rozeti -------------------------------------------------- */
+  .acilis-rozet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background-color: color-mix(in srgb, var(--surface) 80%, transparent);
+    backdrop-filter: blur(10px);
+    padding: 0.4rem 0.9rem 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  .acilis-nokta {
+    position: relative;
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background-color: var(--accent);
+  }
+
+  .acilis-nokta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--accent);
+    animation: acilis-nabiz 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes acilis-nabiz {
+    0% {
+      transform: scale(1);
+      opacity: 0.55;
+    }
+    70%,
+    100% {
+      transform: scale(3.2);
+      opacity: 0;
+    }
+  }
+
+  /* --- Sağ panel ----------------------------------------------------- */
+  .acilis-panel {
+    border-radius: 1.5rem;
+    border: 1px solid var(--line);
+    background-color: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: blur(14px);
+    padding: 1.75rem;
+    box-shadow: var(--shadow-lift);
+  }
+
+  @media (min-width: 1024px) {
+    .acilis-panel {
+      padding: 2.25rem;
+    }
+  }
+
+  /* --- Güzergâh rayı -------------------------------------------------- */
+  .acilis-ray {
+    position: relative;
+    height: 1px;
+    width: 100%;
+    background-color: var(--line-strong);
+  }
+
+  .acilis-uc {
+    position: absolute;
+    top: 50%;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background-color: var(--surface);
+    translate: -50% -50%;
+  }
+
+  .acilis-uc--sol {
+    left: 0;
+  }
+
+  .acilis-uc--sag {
+    left: 100%;
+  }
+
+  /* Uçlarda genişleyip sönen halka */
+  .acilis-uc::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    border: 1px solid var(--accent);
+    animation: acilis-nabiz 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .acilis-uc--sag::after {
+    animation-delay: 1.5s;
+  }
+
+  /*
+     Taşıyıcı ışıkları. Sarmalayıcı rayın tam genişliğinde; yüzdelik
+     transform kendi genişliğine göre çözüldüğü için ışık uçtan uca
+     yalnızca transform ile gidiyor, düzen hesabı olmuyor. Nokta ve
+     kuyruk sözde ögelerle çiziliyor.
+  */
+  .acilis-arac {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: 0;
+  }
+
+  .acilis-arac::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background-color: var(--accent);
+    translate: -50% -50%;
+    box-shadow: 0 0 16px 4px color-mix(in srgb, var(--accent) 38%, transparent);
+  }
+
+  .acilis-arac::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 2px;
+    width: 3.5rem;
+    border-radius: 999px;
+    opacity: 0.55;
+  }
+
+  .acilis-arac--gidis::after {
+    translate: -100% -50%;
+    background: linear-gradient(90deg, transparent, var(--accent));
+  }
+
+  .acilis-arac--donus::after {
+    translate: 0 -50%;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .acilis-arac--gidis {
+    animation: acilis-gidis 5.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  .acilis-arac--donus {
+    animation: acilis-donus 5.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    animation-delay: 2.8s;
+  }
+
+  @keyframes acilis-gidis {
+    0% {
+      transform: translateX(0%);
+      opacity: 0;
+    }
+    10%,
+    88% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes acilis-donus {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    10%,
+    88% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0%);
+      opacity: 0;
+    }
+  }
+
+  /* --- Hazırlık listesi: sırayla işaretleniyor ------------------------ */
+  .acilis-satir {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+    color: var(--faint);
+    animation: acilis-satir-renk 12s ease-in-out infinite;
+    animation-delay: calc(var(--sira) * 1.4s);
+  }
+
+  .acilis-kutu {
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--accent-ink);
+    animation: acilis-kutu 12s ease-in-out infinite;
+    animation-delay: calc(var(--sira) * 1.4s);
+  }
+
+  .acilis-kutu svg {
+    opacity: 0;
+    animation: acilis-tik 12s cubic-bezier(0.34, 1.36, 0.64, 1) infinite;
+    animation-delay: calc(var(--sira) * 1.4s);
+  }
+
+  @keyframes acilis-satir-renk {
+    0%,
+    6% {
+      color: var(--faint);
+    }
+    12%,
+    88% {
+      color: var(--ink-soft);
+    }
+    94%,
+    100% {
+      color: var(--faint);
+    }
+  }
+
+  @keyframes acilis-kutu {
+    0%,
+    6% {
+      background-color: transparent;
+      border-color: var(--line-strong);
+    }
+    12%,
+    88% {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+    94%,
+    100% {
+      background-color: transparent;
+      border-color: var(--line-strong);
+    }
+  }
+
+  @keyframes acilis-tik {
+    0%,
+    6% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    12%,
+    88% {
+      opacity: 1;
+      transform: none;
+    }
+    94%,
+    100% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+  }
+
+  /* --- Alt şerit: hizmetler kesintisiz kayıyor ----------------------- */
+  .acilis-serit {
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+    padding-block: 1.25rem;
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+  }
+
+  .acilis-serit-ray {
+    display: flex;
+    width: max-content;
+    animation: acilis-serit-kay 38s linear infinite;
+  }
+
+  .acilis-serit-set {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .acilis-serit-set span {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    color: var(--faint);
+  }
+
+  .acilis-serit-ayrac {
+    display: inline-block;
+    width: 0.3125rem;
+    height: 0.3125rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background-color: var(--line-strong);
+    margin-inline: 2rem;
+  }
+
+  @keyframes acilis-serit-kay {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ============================================================
+     Cam kart
+
+     Anlatım bölümündeki sahne metinleri için. Arkasındaki kare
+     görünmeye devam etsin diye yüzey yarı saydam; okunabilirliği
+     opaklık değil bulanıklık taşıyor. Üstteki ince açık çizgi camın
+     kenarındaki kırılmayı taklit ediyor, kart düz bir dikdörtgen
+     yerine hacimli duruyor.
+     ============================================================ */
+  .cam-kart {
+    border-radius: 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+    background-color: color-mix(in srgb, var(--surface) 52%, transparent);
+    backdrop-filter: blur(30px) saturate(165%);
+    box-shadow:
+      var(--shadow-lift),
+      inset 0 1px 0 color-mix(in srgb, #fff 55%, transparent);
+  }
+
+  .dark .cam-kart {
+    border-color: color-mix(in srgb, var(--line-strong) 60%, transparent);
+    background-color: color-mix(in srgb, var(--surface) 58%, transparent);
+    box-shadow:
+      var(--shadow-lift),
+      inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent);
   }
 
   /* Bölüm üstü küçük etiket: ─── HİZMETLER */
@@ -250,8 +926,11 @@
      yanlış zemine düşen ton ters çevriliyor. Gri tonlamalı bir görselde
      ters çevirme sadece açık/koyu takas ettiği için logo bozulmuyor.
      ============================================================ */
+  /* Ton düzeltmesi bir değişkende tutuluyor; hover kuralı onun üstüne
+     ekleme yapabilsin ve filtreyi asla sıfırlamak zorunda kalmasın diye. */
   .logo-mark {
     opacity: 0.6;
+    filter: var(--logo-filter);
     transition:
       opacity 0.3s ease,
       filter 0.3s ease;
@@ -264,24 +943,54 @@
 
   /* Koyu logo: açık temada olduğu gibi, koyu temada ters */
   .logo-tone-dark {
-    filter: grayscale(100%);
+    --logo-filter: grayscale(100%);
   }
   .dark .logo-tone-dark {
-    filter: grayscale(100%) invert(100%);
+    --logo-filter: grayscale(100%) invert(100%);
   }
 
   /* Açık logo: açık temada ters, koyu temada olduğu gibi */
   .logo-tone-light {
-    filter: grayscale(100%) invert(100%);
+    --logo-filter: grayscale(100%) invert(100%);
   }
   .dark .logo-tone-light {
-    filter: grayscale(100%);
+    --logo-filter: grayscale(100%);
+  }
+
+  /* Hover'da logo KENDİ renklerine döndürülmüyor.
+     Eskiden `filter: none` uygulanıyordu; beyaz logolar açık zeminde,
+     koyu logolar koyu zeminde görünmez oluyordu. Tonu düzelten filtre
+     her durumda yerinde kalıyor — logo yalnızca netleşiyor ve arkasına
+     zemin rengiyle uyumlu yumuşak bir yüzey geliyor. Böylece iki temada
+     ve her logo tonunda okunaklılık garanti altında. */
+  .logo-link {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .logo-link::before {
+    content: "";
+    position: absolute;
+    inset: -0.5rem -0.75rem;
+    z-index: -1;
+    border-radius: 0.75rem;
+    background-color: var(--surface);
+    box-shadow: var(--shadow-soft);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .logo-mark:hover {
+    .logo-link:hover .logo-mark,
+    .logo-link:focus-visible .logo-mark {
       opacity: 1;
-      filter: none;
+      /* Soluk logolar için hafif kontrast desteği; ton filtresi korunuyor */
+      filter: var(--logo-filter) contrast(115%);
+    }
+
+    .logo-link:hover::before,
+    .logo-link:focus-visible::before {
+      opacity: 1;
     }
   }
 
