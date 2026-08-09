@@ -1,0 +1,6 @@
+
+# veritabani ve ortam
+/prisma/*.db
+/prisma/*.db-journal
+/src/generated
+.env
