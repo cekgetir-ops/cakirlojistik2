@@ -10,7 +10,6 @@
     "db:seed": "node prisma/seed.mjs",
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
-    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "7.9.1",
