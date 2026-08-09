@@ -1,0 +1,10 @@
+Scroll anlatimi kare dizisi (4 sahne x 75 = 300 kare).
+
+Bileşen: src/components/sections/StoryTelling.tsx
+Sahne araliklari: %0-25 giris, %25-50 spanzet detayi,
+%50-75 ust kat / rampa, %75-100 yola cikis.
+
+Yeniden uretmek icin:
+  node scripts/kare-cikar.mjs 300 <sahne1> <sahne2> <sahne3> <sahne4>
+
+Kare sayisini degistirirsen bilesendeki KARE_SAYISI sabitini de esitle.
